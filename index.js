@@ -5,7 +5,6 @@ const env = require("dotenv");
 env.config();
 const app = express();
 const morgan = require("morgan");
-app.use(morgan("tiny"));
 
 let isConnected = false;
 
@@ -31,14 +30,13 @@ async function connectToDatabase() {
 }
 
 app.use(cors({
-  origin: [
-    "https://book-review-kappa-eight.vercel.app",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "https://book-review-kappa-eight.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
   credentials: true
 }));
 
 app.use(express.json());
+app.use(morgan("tiny"));
 
 const userRoute = require("./route/userRoute");
 const bookRoute = require("./route/bookRoute");
@@ -62,6 +60,12 @@ app.get("/health", (req, res) => {
   res.status(200).json({ 
     status: "OK", 
     database: isConnected ? "Connected" : "Disconnected" 
+  });
+});
+
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "Book Review API is running!",
   });
 });
 
