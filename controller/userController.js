@@ -5,13 +5,28 @@ const { compare_password, create_token, hash_password, verify_token } = require(
 const register = async(req,res) =>{
     try{
     const data = req.body;
+    const existing_email = await userModel.findOne({email:data.email})
+    if(existing_email) {
+        return res.status(409).json({
+            success:false,
+            message:"This email already exist"
+        })
+    }
+    const existing_username = await userModel.findOne({username:data.username})
+    if(existing_username) {
+        return res.status(409).json({
+            success:false,
+            message:"This username already taken"
+        })
+    }
+    
     const hashed_password = await hash_password(data.password);
     const result = await userModel.create({
         username:data.username,
         email:data.email,
         password:hashed_password
     })
-    const token = create_token({id:result._id})
+    const token = create_token({id:result._id,role:result.role})
     res.status(200).json({
         success:true,
         message:"user registered successfully",

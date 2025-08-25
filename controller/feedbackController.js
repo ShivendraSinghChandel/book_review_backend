@@ -27,10 +27,13 @@ const create = async(req,res) =>{
     }
 
     const allFeedbacks = await feedbackModel.find({ book_id: data.book_id });
-    const totalRatings = allFeedbacks.reduce((sum, f) => sum + f.rating, 0);
-    const avgRating = totalRatings / allFeedbacks.length;
+     let avgRating = 0;
+     if(allFeedbacks.length > 0) {
+     const totalRatings = allFeedbacks.reduce((sum, f) => sum + f.rating, 0);
+     avgRating = totalRatings / allFeedbacks.length;
+     }
 
-    await bookModel.findByIdAndUpdate(data.book_id, { average_rating: avgRating });
+     await bookModel.findByIdAndUpdate(data.book_id, { average_rating: avgRating });
 
     res.status(200).json({
         success:true,
@@ -58,6 +61,14 @@ const update = async(req,res) =>{
             message:"feedback not updated"
         })
      }
+     const allFeedbacks = await feedbackModel.find({ book_id: data.book_id });
+     let avgRating = 0;
+     if(allFeedbacks.length > 0) {
+     const totalRatings = allFeedbacks.reduce((sum, f) => sum + f.rating, 0);
+     avgRating = totalRatings / allFeedbacks.length;
+     }
+
+     await bookModel.findByIdAndUpdate(data.book_id, { average_rating: avgRating });
      res.status(200).json({
         success:true,
         message:"feedback updated"
@@ -68,23 +79,39 @@ const update = async(req,res) =>{
    }
 }
 
-const deletefeedback = async(req,res) =>{
+const deletefeedback = async(req,res) => {
    try{
-     const data = req.params;
-     const feedback = await feedbackModel.findByIdAndDelete(data.id)
+     const { id, book_id } = req.params;
+     
+     const feedback = await feedbackModel.findByIdAndDelete(id);
      if(!feedback) {
         return res.status(400).json({
-            success:false,
-            message:"feedback not deleted"
+            success: false,
+            message: "feedback not deleted"
         })
      }
+     
+     const allFeedbacks = await feedbackModel.find({ book_id: book_id });
+     
+     let avgRating = 0;
+     if(allFeedbacks.length > 0) {
+         const totalRatings = allFeedbacks.reduce((sum, f) => sum + f.rating, 0);
+         avgRating = totalRatings / allFeedbacks.length;
+     }
+
+     await bookModel.findByIdAndUpdate(book_id, { average_rating: avgRating });
+     
      res.status(200).json({
-        success:true,
-        message:"feedback deleted"
+        success: true,
+        message: "feedback deleted"
      })
    }
    catch(err) {
-    res.status(500).json("an error occured",err)
+    res.status(500).json({
+        success: false,
+        message: "an error occurred",
+        error: err.message
+    })
    }
 }
 
@@ -104,12 +131,6 @@ const get_user_feedback = async(req,res) =>{
         user_id:user_id,
         book_id:data.book_id
      })
-     if(!feedbacks || feedbacks.length===0) {
-        return res.status(400).json({
-            success:false,
-            message:"no feedbacks found"
-        })
-     }
      res.status(200).json({
         success:true,
         data:feedbacks

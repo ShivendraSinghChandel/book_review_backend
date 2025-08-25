@@ -72,14 +72,12 @@ const get_single_book = async (req, res) => {
         });
 
     const book = await bookModel.findById(id);
-    console.log(book)
     if (!book) return res.status(404).json({ 
         success: false, 
         message: "Book not found" 
     });
 
     const feedbacks = await feedbackModel.find({ book_id: id }).populate("user_id", "username email");
-    console.log(feedbacks)
 
     res.status(200).json({ success: true, data: { book, feedbacks } });
 
