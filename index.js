@@ -13,9 +13,9 @@ app.use(cors({
     methods: ["GET","POST","PUT","DELETE"]
 }));
 app.use(express.json())
-const userRoute = require("../route/userRoute")
-const bookRoute = require("../route/bookRoute")
-const feedbackRoute = require("../route/feedbackRoute")
+const userRoute = require("./route/userRoute")
+const bookRoute = require("./route/bookRoute")
+const feedbackRoute = require("./route/feedbackRoute")
 
 app.use("/user",userRoute)
 app.use("/book",bookRoute)
